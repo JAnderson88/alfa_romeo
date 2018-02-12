@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 0;
+      min-height: 10vh;
+      min-width: 93vw;
+      background-color: #E3E3E3;
+    }
+
+    footer {
+      padding-left: 6.85vw;
+      line-height: 9vh;
+    }
+
+    footer span {
+      display: inline-block;
+      min-width: 11vw;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer span img {
+      max-width: 1.3vw;
+    }
+
+    footer span select {
+      border: 0;
+      outline: 0;
+      background-color: #E3E3E3;
+    }
+
+    .selector {
+      border: 1px solid black;
+      position: absolute;
+      padding: 4vh 2vw 0vh 2vw;
+      background: #151313;
+      min-width: 17vw;
+      min-height: 19vh;
+      top: 69vh;
+      left: 0vw;
+      z-index: 1;
+    }
+
+    .select {
+      min-width: 10vw;
+      min-height: 6vh;
+      background-color: #656363;
+      line-height: 6vh;
+      padding-left: 2vw;
+    }
+
+    .select:hover {
+      background-color: #E3E3E3;
+    }
+
+    .continue {
+      position: absolute;
+      text-align: center;
+      color: blue;
+      background-color: #656363;
+      line-height: 2vw;
+      min-width: 13vw;
+      min-height: 4vh;
+      left: 4vw;
+      z-index: 1;
+    }
+
+    .selector ul {
+      position: absolute;
+      top: 3vh;
+      left: 0vw;
+      z-index: 2;
+    }
+
+    .selector li {
+      background-color: #E3E3E3;
+      list-style-type: none;
+      min-width: 17vw;
+      min-height: 3vh;
+      text-align: center;
+    }
+
+    .selector li:hover {
+      background-color: #0549b7;
+      cursor: pointer;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+  <title>Find your Country</title>
+</head>
+
+<body>
+  <div class="selector hide">
+    <div class="select" id="region" data-added="">SELECT A REGION</div>
+    <ul class="region_selector hide" data-type="reg">
+    </ul>
+    <div class="select" id="market" data-added="">SELECT A MARKET</div>
+    <ul class="market_selector hide" data-type="mark">
+    </ul>
+    <div class="continue">CONTINUE</div>
+  </div>
+  <footer>
+    <span>
+      <img src="USA_flag.png" alt="Should be a flag">
+      UNITED STATES
+      <select></select>
+    </span>
+    <span>PRIVACY</span>
+    <span>TERMS OF USE</span>
+    <span>COPYRIGHT</span>
+    <span>CONTACT US</span>
+    <span>CAREERS</span>
+    <span>SITEMAP</span>
+  </footer>
+  <script src="findyourcountry.js"></script>
+  <script>
+    function main(data) {
+      console.log(data)
+      const select = document.querySelector("footer span select")
+      const selector = document.querySelector(".selector")
+      const selectors = document.querySelectorAll(".select")
+      const uls = document.querySelectorAll(".selector ul")
+      appendListItems(uls[0], data.brands.alfaromeo, data.brands.region_map,
+        data.brands.alfaromeo.asiapacific.region_value,
+        data.brands.alfaromeo.middleeast.region_value,
+        data.brands.alfaromeo.europe.region_value,
+        data.brands.alfaromeo.africa.region_value,
+        data.brands.alfaromeo.americas.region_value,
+        data.brands.alfaromeo.caribbean.region_value,
+      )
+      const region = document.querySelector("#region")
+      const regLi = uls[0].querySelectorAll('li')
+      const market = document.querySelector("#market")
+      const cont = document.querySelector(`.continue`)
+
+      function toggle(elem, cl) {
+        elem.classList.toggle(cl)
+      }
+      function appendListItems(ul, obj, regMap, ...values) {
+        ul.innerHTML = ``
+        let keys = Object.keys(obj)
+        if (ul.dataset.type === `reg`) {
+          for (let i = 0; i < values.length; i++) {
+            ul.innerHTML += `<li data-key="${keys[i]}">${values[i].toUpperCase()}</li>`
+          }
+        }
+        if (ul.dataset.type === `mark`) {
+          for (let prop in obj) {
+            if (prop === `region_value`) return
+            if (obj[prop].site !== "NA") {
+              ul.innerHTML += `<li data-key="${prop}">${regMap[`${prop}`].country.toUpperCase()}</li>`
+            }
+          }
+        }
+      }
+
+      select.addEventListener('click', e => {
+        toggle(selector, 'hide')
+      })
+      selectors.forEach((sel, i) => {
+        sel.addEventListener('click', e => {
+          toggle(uls[i], 'hide')
+        })
+      })
+      regLi.forEach((li, i) => {
+        li.addEventListener('click', e => {
+          toggle(uls[0], 'hide')
+          region.textContent = li.textContent
+          appendListItems(uls[1], data.brands.alfaromeo[`${li.dataset.key}`], data.brands.region_map, Object.keys(data.brands.alfaromeo[`${li.dataset.key}`]))
+          // x = li.dataset.type
+          region.dataset.added = li.dataset.key
+          const markLi = uls[1].querySelectorAll('li')
+          markLi.forEach((li, i) => {
+            li.addEventListener('click', e => {
+              // y = li.dataset.type
+              market.dataset.added = li.dataset.key
+              toggle(uls[1], 'hide')
+              market.textContent = li.textContent
+            })
+          })
+        })
+      })
+
+      cont.addEventListener('click', e=>{
+        if(region.textContent === 'SELECT A REGION' || market.textContent === 'SELECT A MARKET') return
+        console.log(region.dataset.added, market.dataset.added)
+        // console.log(data.brands.alfaromeo)
+        window.location.href = data.brands.alfaromeo[`${region.dataset.added}`][`${market.dataset.added}`].site
+      })
+    }
+
+    main(data)
+  </script>
+</body>
+
+</html>
